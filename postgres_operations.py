@@ -8,12 +8,9 @@ Author: Brent
 """
 
 import pandas as pd
-import json
-import boto3
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 
-BASE_URL= "" # Add the constant url. After getting access
 class PostgresDB:
     def __init__(self, username, password, host="34.73.180.136", port=5432, database="fsecdatabase"):
         self.username = username
@@ -113,7 +110,6 @@ class PostgresDB:
         except Exception as e:
             self.handle_error(e, "get_el_pairs")
             return {"error": str(e)}
-
 
 
 # Example usage:
