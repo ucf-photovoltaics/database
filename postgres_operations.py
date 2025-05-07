@@ -77,7 +77,7 @@ class PostgresDB:
     
             # Step 2: Get EL measurements
             el_query = """
-            SELECT * FROM instrument_data.el_metadata
+            SELECT "ID", "module-id", "date", "time", "current"  FROM instrument_data.el_metadata
             WHERE "module-id" = %s
             """
             el_df = self.read_records_from_postgres(el_query, (module_id,))
@@ -101,8 +101,8 @@ class PostgresDB:
                 if not near_isc.empty and not near_01isc.empty:
                     # Use first match from each category to form a pair
                     pairs_by_date[str(date)] = {
-                        "near_isc": near_isc.iloc[0].to_dict(),
-                        "near_01isc": near_01isc.iloc[0].to_dict()
+                        "tenth_isc": near_01isc.iloc[0].to_dict(),
+                        "one_isc": near_isc.iloc[0].to_dict()
                     }
     
             return pairs_by_date if pairs_by_date else {"message": "No matching EL pairs found."}
