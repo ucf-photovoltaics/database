@@ -56,8 +56,8 @@ db = PostgresDB(
     password="your_password"
 )
 
-results = db.query("SELECT * FROM module_metadata;")
-db.insert("module_metadata", ["module_id", "make"], ["123", "ABC Solar"])
+results = db.read_records_from_postgres("SELECT * FROM module_metadata;")
+db.create_postgres_records_from_dataframe("module_metadata", ["module_id", "make"], ["123", "ABC Solar"])
 ```
 
 ---
@@ -85,17 +85,17 @@ The SQLite class automatically generates a log file (named based on the DB path)
 
 ## 🚀 Future Enhancements
 
-* Context manager support in PostgresDB
-* Optional schema validation for inserts
-* Transaction management
-* Integration with Airflow or other orchestration tools
+* Automated Raw Data Upload to NSF ACCESS
+* RDF Enrichment Via Comments and Metadata Table
+* Workflow Integrations and Notebook Support
+* Integration with Airflow and other orchestration tools
 
 ---
 
 ## 🧑‍💻 Author
 
 **Brent Thompson**
-University of Central Florida – Photovoltaics Research Group
+University of Central Florida – Data Enabled Photovoltaics Research Group
 
 ---
 
