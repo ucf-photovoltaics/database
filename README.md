@@ -1,5 +1,4 @@
-# database
-Database Tooling
+
 # Database Operations Modules
 
 This repository provides two Python modules for performing robust, logged, and flexible database operations on **SQLite** and **PostgreSQL** databases. These classes are designed for streamlined data engineering workflows, especially where Pandas integration is essential.
