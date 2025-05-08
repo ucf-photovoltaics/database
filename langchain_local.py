@@ -3,6 +3,8 @@
 Created on Sun May  4 08:43:44 2025
 
 @author: Brent Thompson
+
+https://python.langchain.com/docs/tutorials/sql_qa/
 """
 
 #from langchain_ollama import OllamaLLM
