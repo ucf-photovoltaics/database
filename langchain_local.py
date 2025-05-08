@@ -8,11 +8,9 @@ https://python.langchain.com/docs/tutorials/sql_qa/
 """
 
 #from langchain_ollama import OllamaLLM
-from langchain_community.chat_message_histories import SQLChatMessageHistory
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.chat_models import init_chat_model
 from langchain_community.utilities import SQLDatabase
-from datetime import datetime 
 from typing_extensions import TypedDict, Annotated
 
 # Testing to get the AI to read and only use the DB for responses
@@ -37,6 +35,43 @@ few relevant columns given the question.
 Pay attention to use only the column names that you can see in the schema
 description. Be careful to not query for columns that do not exist. Also,
 pay attention to which column is in which table.
+Module Metadata is the most important table. 'module-id' links to all of the 
+metadata tables. 
+
+TABLE "module-metadata" (
+	"module-id"	TEXT NOT NULL UNIQUE,
+	"serial-number"	TEXT,
+	"make"	TEXT,
+	"model"	TEXT,
+	"nameplate-pmp"	REAL,
+	"nameplate-vmp"	REAL,
+	"nameplate-imp"	REAL,
+	"nameplate-voc"	REAL,
+	"nameplate-isc"	REAL,
+	"temperature-coefficient-voltage"	REAL,
+	"temperature-coefficient-power"	REAL,
+	"temperature-coefficient-current"	REAL,
+	"module-packaging"	TEXT,
+	"interconnection-scheme"	TEXT,
+	"number-parallel-strings"	INTEGER,
+	"cells-per-string"	INTEGER,
+	"module-arc"	TEXT,
+	"connector-type"	TEXT,
+	"junction-box-locations"	TEXT,
+	"number-junction-box"	INTEGER,
+	"number-busbars"	TEXT,
+	"cell-area"	TEXT,
+	"module-area"	TEXT,
+	"cell-technology"	TEXT,
+	"wafer-doping-polarity"	TEXT,
+	"wafer-crystallinity"	TEXT,
+	"encapsulant"	TEXT,
+	"backsheet"	TEXT,
+	"frame-material"	TEXT,
+	"x"	INTEGER,
+	"y"	INTEGER,
+	PRIMARY KEY("module-id")
+);
 
 Only use the following tables:
 {table_info}
@@ -77,25 +112,3 @@ def write_query(state: State):
 
 write_query({"question": "How many modules are there?"})
 
-write_query()
-
-
-answer = llm.invoke(human_input)
-
-print(answer.content)
-
-## This is testing for a local feedback loop, for now just a record
-
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  
-
-chat_message_history = SQLChatMessageHistory(
-    
-    session_id=timestamp,
-    connection_string="sqlite:///C:/Projects/LocalAI/sqlite.db",
-    table_name='testing',
-    session_id_field_name = 'session_id'
-)
-
-chat_message_history.add_messages(chat_message_history.messages)
-
-q = chat_message_history.messages
