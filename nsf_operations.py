@@ -8,9 +8,10 @@ Author: Albert
 
 """
 
-
 import json
 import boto3
+import pandas as pd
+import os
 from botocore.client import Config
 
 class NSF_DB:
@@ -23,6 +24,7 @@ class NSF_DB:
                 "secret_key": "YOUR_SECRET_KEY",
                 "endpoint_url": "https://YOUR_OSN_ENDPOINT"
             }
+        Currently just based on Amazon S3 services.
         """
         with open(key_file, 'r') as f:
             keys = json.load(f)
@@ -40,14 +42,17 @@ class NSF_DB:
         )
 
 
-    def uri_generator(self,bucket_name:str):
+    def uri_generator(self, bucket_name:str):
         pass
 
-    def upload_files(self, bucket_name:str)->None:
+    def upload_files(self, input:DataFrame.Series,bucket_name:str)->None:
+        """Column from a dataframe (Series)"""
         pass
 
-    def download_files(self,bucket_name:str)->None:
+    def download_files(self, bucket_name:str, output: DataFrame.Series)->None:
+        """Column from a dataframe (Series)"""
         pass
 
-    def search_files(self,bucket_name:str)->bool:
+    """Source -> destination, can be buckets for both param, input==> path, (globus)"""
+    def transfer_files(source, dest):
         pass
