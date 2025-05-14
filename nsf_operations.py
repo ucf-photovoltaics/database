@@ -2,7 +2,7 @@
 """
 Created on Wed May 7 18:22:40 2025
 
-NSF Access operations module.
+NSF Access operations module. Currently not tested.
 
 Author: Albert
 
@@ -13,7 +13,8 @@ import boto3
 import pandas as pd
 import os
 from botocore.client import Config, ClientError
-
+from io import BytesIO
+import requests
 
 class NSF_DB:
     def __init__(self,key_file):
@@ -42,7 +43,8 @@ class NSF_DB:
                 config=Config(signature_version='s3v4')
         )
     
-    # No need to create URI's manually use presigned_uri's since the bucket is private
+    # Only for private buckets, and for user who don't have access to the bucket, grants temporary access to objects
+
     def generate_presigned_url(self, bucket_name, object_key, expiration=3600):
         try:
             return self.s3_client.generate_presigned_url(
@@ -65,9 +67,43 @@ class NSF_DB:
             except ClientError as e:
                 print(f"Error uploading {file_name}:{e}")
 
-    def download_files(self, bucket_name:str, output: pd.Series)->None:
-        """Column from a dataframe (Series)"""
-        pass
+    # If downloading everything, get the list of objects inside the bucket, then generate URL for those objects and download them to mememory
+    def download_files(self, bucket_name:str, file_keys: pd.Series)->None:
+        """
+        Downloads files from S-3 compatible storage using the pre-signed URLs.
+        Current Version stores files in memeory as BytesIO objects
+        Args:
+            bucket_name(str): The name of the S3 bucket
+            file_keys (pd.Series): Series of object keys (filenames) to download
+
+        Returns:
+            dict: Dictionary mapping filenames to BytesIO objects
+
+        Future implementation if file_keys == [ ], downloads all objects inside the bucket
+        """
+
+        downloaded_files = {}
+
+        for object_key in file_keys.to_list():
+            try:
+                presigned_url = self.generate_presigned_url(bucket_name=bucket_name, object_key=object_key)
+
+                if not presigned_url:
+                    print(f"Skipping {object_key} due to URL generation failure.")
+                    continue
+
+                response = requests.get(presigned_url)
+
+                if response.status_code == 200:
+                    file_obj  = BytesIO(response.content)
+                    downloaded_files['object_key'] = file_obj
+                    print(f"Downloaded {object_key} successfully.")
+                else:
+                    print(f"Failed to download {object_key}: Status code {response.status_code}")
+            except Exception as e:
+                print(f"Error downloading {object_key}: {e}")
+            
+            return downloaded_files
 
     """Source -> destination, can be buckets for both param, input==> path, try to implement (globus)"""
     def transfer_files(source, dest):
