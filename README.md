@@ -62,17 +62,59 @@ db.create_postgres_records_from_dataframe("module_metadata", ["module_id", "make
 
 ---
 
+### 3. `nsf_operations.py` 
+
+Provides the `NSF_DB` class for interacting with interacting with the bucket in NSF ACCESS.
+
+#### ✅ Key Features
+* Credential Handling: Loads access credentials from JSON securely
+* S3 Client Config: Custom S3-compatible client with private endpoint support
+* Upload Support: Uploads raw datafiles using pd.Series of paths
+* Presigned URLS: Generates temporary secure links for private object access (Future Support)
+* Dowload Support: Placeholder for future implementation of secure downloads
+* Transfer Support: Placeholder for future implementation of secure transfers using globus  ideally between buckets
+
+#### 📌 Example
+
+```python
+
+from nsf_operations import NSF_DB
+
+        """
+        Initialize NSF_DB connection using credentials from key_file.
+        key_file should be a JSON file with:
+            {
+                "access_key": "YOUR_ACCESS_KEY",
+                "secret_key": "YOUR_SECRET_KEY",
+                "endpoint_url": "https://YOUR_OSN_ENDPOINT"
+            }
+        Currently just based on Amazon S3 services.
+        """
+nsf_db = NSF_DB(
+    key_file: "/path/to/your/key_file.json"
+)
+
+# Upload file
+df = pd.Series(['file1.txt','file2.txt'])
+nsf_db.upload_files(df, bucket_name="bucket_name") # Change to match the bucket name to upload files
+```
+
+
+---
+
 ## 📦 Requirements
 
 * Python 3.7+
 * pandas
 * sqlite3 (standard library)
 * psycopg2
+* boto3
+* botocore
 
 Install required packages:
 
 ```bash
-pip install pandas psycopg2
+pip install pandas psycopg2 boto3 botocore
 ```
 
 ---
