@@ -71,7 +71,7 @@ Provides the `NSF_DB` class for interacting with interacting with the bucket in 
 * S3 Client Config: Custom S3-compatible client with private endpoint support
 * Upload Support: Uploads raw datafiles using pd.Series.
 * Presigned URLS: Generates temporary secure links for private object access (Future Support)
-* Dowload Support: Placeholder for future implementation of secure downloads
+* Download Support: Download required objects from buckets
 * Transfer Support: Placeholder for future implementation of secure transfers using globus  ideally between buckets
 
 #### 📌 Example
@@ -97,6 +97,12 @@ nsf_db = NSF_DB(
 # Upload file
 df = pd.Series(['file1.txt','file2.txt'])
 nsf_db.upload_files(df, bucket_name="bucket_name") # Change to match the bucket name to upload files
+
+# Download Files
+file_dict = nsf_db.download_files(bucket_name="bucket_name", file_keys=df) 
+
+# Download all Files
+file_dict  = nsf_db.download_files(bucket_name="bucket_name")
 ```
 
 
@@ -127,7 +133,7 @@ The SQLite class automatically generates a log file (named based on the DB path)
 
 ## 🚀 Future Enhancements
 
-* Automated Raw Data Upload to NSF ACCESS
+* Automated Raw Data Upload to NSF ACCESS (Future Considerations: Parallel Processing (Upload/Download), Progress Bar)
 * RDF Enrichment Via Comments and Metadata Table
 * Workflow Integrations and Notebook Support
 * Integration with Airflow and other orchestration tools
