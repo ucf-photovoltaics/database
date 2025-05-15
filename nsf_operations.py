@@ -67,43 +67,59 @@ class NSF_DB:
             except ClientError as e:
                 print(f"Error uploading {file_name}:{e}")
 
-    # If downloading everything, get the list of objects inside the bucket, then generate URL for those objects and download them to mememory
-    def download_files(self, bucket_name:str, file_keys: pd.Series)->None:
-        """
-        Downloads files from S-3 compatible storage using the pre-signed URLs.
-        Current Version stores files in memeory as BytesIO objects
-        Args:
-            bucket_name(str): The name of the S3 bucket
-            file_keys (pd.Series): Series of object keys (filenames) to download
+    
+def download_files(self, bucket_name: str, file_keys: pd.Series = None) -> dict:
+    """
+    Downloads files from S3-compatible storage using presigned URLs.
+    Stores files in memory as BytesIO objects.
 
-        Returns:
-            dict: Dictionary mapping filenames to BytesIO objects
+    Args:
+        bucket_name (str): The name of the S3 bucket
+        file_keys (pd.Series, optional): Series of object keys (filenames) to download. 
+                                         If None, or empty, all objects in the bucket are downloaded.
 
-        Future implementation if file_keys == [ ], downloads all objects inside the bucket
-        """
+    Returns:
+        dict: Dictionary mapping filenames to BytesIO objects (Memory)
+    """
 
-        downloaded_files = {}
+    if file_keys is None or file_keys.empty:
+        try:
+            paginator = self.s3_client.get_paginator("list_objects_v2")
+            page_iterator = paginator.paginate(Bucket=bucket_name)
 
-        for object_key in file_keys.to_list():
-            try:
-                presigned_url = self.generate_presigned_url(bucket_name=bucket_name, object_key=object_key)
+            all_keys = []
+            for page in page_iterator:
+                if "Contents" in page:
+                    all_keys.extend([obj["Key"] for obj in page["Contents"]])
 
-                if not presigned_url:
-                    print(f"Skipping {object_key} due to URL generation failure.")
-                    continue
+            file_keys = pd.Series(all_keys)
+            print(f"Found {len(file_keys)} object(s) in '{bucket_name}' for download.")
+        except ClientError as e:
+            print(f"Error listing objects in bucket: {e}")
+            return {}
 
-                response = requests.get(presigned_url)
+    downloaded_files = {}
 
-                if response.status_code == 200:
-                    file_obj  = BytesIO(response.content)
-                    downloaded_files['object_key'] = file_obj
-                    print(f"Downloaded {object_key} successfully.")
-                else:
-                    print(f"Failed to download {object_key}: Status code {response.status_code}")
-            except Exception as e:
-                print(f"Error downloading {object_key}: {e}")
-            
-            return downloaded_files
+    for object_key in file_keys.to_list():
+        try:
+            presigned_url = self.generate_presigned_url(bucket_name=bucket_name, object_key=object_key)
+
+            if not presigned_url:
+                print(f"Skipping {object_key} due to URL generation failure.")
+                continue
+
+            response = requests.get(presigned_url)
+
+            if response.status_code == 200:
+                file_obj = BytesIO(response.content)
+                downloaded_files[object_key] = file_obj
+                print(f"Downloaded {object_key} successfully.")
+            else:
+                print(f"Failed to download {object_key}: Status code {response.status_code}")
+        except Exception as e:
+            print(f"Error downloading {object_key}: {e}")
+
+    return downloaded_files
 
     """Source -> destination, can be buckets for both param, input==> path, try to implement (globus)"""
     def transfer_files(source, dest):
