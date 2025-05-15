@@ -69,7 +69,7 @@ Provides the `NSF_DB` class for interacting with interacting with the bucket in 
 #### ✅ Key Features
 * Credential Handling: Loads access credentials from JSON securely
 * S3 Client Config: Custom S3-compatible client with private endpoint support
-* Upload Support: Uploads raw datafiles using pd.Series of paths
+* Upload Support: Uploads raw datafiles using pd.Series.
 * Presigned URLS: Generates temporary secure links for private object access (Future Support)
 * Dowload Support: Placeholder for future implementation of secure downloads
 * Transfer Support: Placeholder for future implementation of secure transfers using globus  ideally between buckets
