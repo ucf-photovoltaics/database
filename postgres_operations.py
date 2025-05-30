@@ -13,7 +13,6 @@ import boto3
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 
-BASE_URL= "" # Add the constant url. After getting access
 class PostgresDB:
     def __init__(self, username, password, host="34.73.180.136", port=5432, database="fsecdatabase"):
         self.username = username
