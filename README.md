@@ -82,6 +82,9 @@ The JSON key file must include the following fields:
   "secret_access_key": "YOUR_SECRET_KEY",
   "endpoint_url": "https://your-private-endpoint"
 }
+```
+
+---
 
 #### 📌 Example
 
