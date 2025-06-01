@@ -33,19 +33,26 @@ class NSF_DB:
     def __repr__(self):
         return f"<NSF_DB endpoint={self.endpoint_url}>"
 
-    def __load_keys(self, key_file: str):
+    def __load_keys(self, key_file: str, return_keys: bool = False):
         with open(key_file, 'r') as f:
             keys = json.load(f)
+        
+        if return_keys:
+            return keys
+        
         self.access_key_id = keys['access_key_id']
         self.secret_access_key = keys['secret_access_key']
         self.endpoint_url = keys['endpoint_url']
 
-    def __init_s3_client(self):
-        self.s3_client = boto3.client(
+    def __init_s3_client(self, access_key=None, secret_key=None, endpoint_url=None):
+        """
+        Initialize and return a boto3 client. If params are None, use instance credentials.
+        """
+        return boto3.client(
             's3',
-            endpoint_url=self.endpoint_url,
-            aws_access_key_id=self.access_key_id,
-            aws_secret_access_key=self.secret_access_key,
+            endpoint_url=endpoint_url or self.endpoint_url,
+            aws_access_key_id=access_key or self.access_key_id,
+            aws_secret_access_key=secret_key or self.secret_access_key,
             config=Config(signature_version='s3v4')
         )
 
@@ -77,34 +84,11 @@ class NSF_DB:
                 print(f"[UPLOAD ERROR] {file_path.name}: {e}")
             except Exception as e:
                 print(f"[ERROR] {file_path.name}: {e}")
-    """
-    def download_files(self, bucket_name: str, file_keys: pd.Series = None) -> dict:
+
+    def transfer_between_buckets(self, source_bucket, dest_bucket, dest_key_file, prefix)-> None:
+        dest_keys = self.__load_keys(dest_key_file, return_keys=True)
         
-        Downloads files from S3-compatible storage into memory (BytesIO).
-
-        Args:
-            bucket_name (str): The name of the S3 bucket.
-            file_keys (pd.Series, optional): Object keys to download. If None, downloads all.
-
-        Returns:
-            dict: Mapping from filename to BytesIO content.
-    
-        if file_keys is None or file_keys.empty:
-            file_keys = self.__list_bucket_objects(bucket_name)
-
-        downloaded_files = {}
-        for object_key in file_keys.to_list():
-            try:
-                response = self.s3_client.get_object(Bucket=bucket_name, Key=object_key)
-                downloaded_files[object_key] = BytesIO(response['Body'].read())
-                print(f"[Success] Downloaded: {object_key}")
-            except ClientError as e:
-                print(f"[DOWNLOAD ERROR] {object_key}: {e}")
-            except Exception as e:
-                print(f"[ERROR] {object_key}: {e}")
-
-        return downloaded_files
-    """
+        pass
     def __list_bucket_objects(self, bucket_name: str) -> pd.Series:
         """
         List all objects in a bucket.
@@ -131,7 +115,7 @@ class NSF_DB:
 Notes:
     --- Download (transfer functions for)
     --- Bucket => HPC
-    --- Globus_Sdk -- (Maybet)
+    --- Globus_Sdk -- (L)
     --- Transfer between bucket to bucket (boto3)
     --- Add a feedback loop
 """
