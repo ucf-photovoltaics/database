@@ -70,26 +70,24 @@ Provides the `NSF_DB` class for interacting with interacting with the bucket in 
 * Credential Handling: Loads access credentials from JSON securely
 * S3 Client Config: Custom S3-compatible client with private endpoint support
 * Upload Support: Uploads raw datafiles using pd.Series.
-* Presigned URLS: Generates temporary secure links for private object access (Future Support)
-* Download Support: Download required objects from buckets
-* Transfer Support: Placeholder for future implementation of secure transfers using globus  ideally between buckets
+* Transfer Support: Transfers files from one bucket to a different bucket
+
+#### 📂 Key File Format
+
+The JSON key file must include the following fields:
+
+```json
+{
+  "access_key_id": "YOUR_ACCESS_KEY",
+  "secret_access_key": "YOUR_SECRET_KEY",
+  "endpoint_url": "https://your-private-endpoint"
+}
 
 #### 📌 Example
 
 ```python
 
 from nsf_operations import NSF_DB
-
-        """
-        Initialize NSF_DB connection using credentials from key_file.
-        key_file should be a JSON file with:
-            {
-                "access_key": "YOUR_ACCESS_KEY",
-                "secret_key": "YOUR_SECRET_KEY",
-                "endpoint_url": "https://YOUR_OSN_ENDPOINT"
-            }
-        Currently just based on Amazon S3 services.
-        """
 nsf_db = NSF_DB(
     key_file: "/path/to/your/key_file.json"
 )
@@ -101,8 +99,14 @@ nsf_db.upload_files(df, bucket_name="bucket_name") # Change to match the bucket 
 # Download Files
 file_dict = nsf_db.download_files(bucket_name="bucket_name", file_keys=df) 
 
-# Download all Files
-file_dict  = nsf_db.download_files(bucket_name="bucket_name")
+# Transfer between buckets
+db.transfer_between_buckets(
+    source_bucket="bucket1",# Name of source bucket
+    dest_bucket="bucket2", # Name of destination bucket
+    dest_key_file=" ", # Path to the key file (Key file should be in JSON format)
+    prefix="pretrain/" ## (Optional)
+)
+
 ```
 
 
@@ -115,7 +119,7 @@ file_dict  = nsf_db.download_files(bucket_name="bucket_name")
 * sqlite3 (standard library)
 * psycopg2
 * boto3
-* botocore
+* botocore == 1.35.95
 
 Install required packages:
 
