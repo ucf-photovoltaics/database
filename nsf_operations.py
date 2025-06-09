@@ -27,7 +27,7 @@ class NSF_DB:
                 "endpoint_url": "https://YOUR_OSN_ENDPOINT"
             }
         """
-        self.keys = self.__load_keys(key_file)
+        self.keys = self._load_keys(key_file)
         self.s3_client = self._create_s3_client(
             access_key=self.keys['access_key_id'],
             secret_key=self.keys['secret_access_key'],
@@ -37,7 +37,7 @@ class NSF_DB:
     def __repr__(self):
         return f"<NSF_DB endpoint={self.keys['endpoint_url']}>"
     
-    def __load_keys(self, key_file:str) -> dict:
+    def _load_keys(self, key_file:str) -> dict:
         with open(key_file, 'r') as f:
             return json.load(f)
     
@@ -50,14 +50,14 @@ class NSF_DB:
             config=Config(signature_version='s3v4')
         )
     def _get_s3_client_from_file(self, key_file: str):
-        keys = self.__load_keys(key_file)
+        keys = self._load_keys(key_file)
         return self._create_s3_client(
             access_key=keys['access_key_id'],
             secret_key=keys['secret_access_key'],
             endpoint_url=keys['endpoint_url']
         )
     
-    def upload_files(self, input_files: pd.Series, bucket_name:str, return_report: bool = False) -> dict | None:
+    def upload_files(self, input_files: pd.Series, bucket_name:str, prefix: str = "", return_report: bool = False) -> dict | None:
         """
         Upload files to a given S3-compatible bucket.
 
@@ -70,7 +70,8 @@ class NSF_DB:
         for file_path in input_files.to_list():
             file_path = Path(file_path)
             filename = file_path.name
-            
+            key = f"{prefix}/{filename}" if prefix else file_path.name
+
             if not file_path.exists():
                 print(f"[MISSING FILE] {file_path} not found.")
                 report[filename] = 'missing'
@@ -81,7 +82,7 @@ class NSF_DB:
                     data = f.read()
                     self.s3_client.put_object(
                         Bucket=bucket_name,
-                        Key=file_path.name,
+                        Key=key,
                         Body=data,
                         ContentLength=len(data)
                     )
@@ -95,14 +96,14 @@ class NSF_DB:
                 report[filename] = f'error: {str(e)}'
 
         return report if return_report else None
-
-    def transfer_between_buckets(self, source_bucket: str, dest_bucket: str, dest_key_file: str, prefix: str = "") -> None:
+    
+    def _transfer_between_buckets(self, source_bucket: str, dest_bucket: str, dest_key_file: str, prefix: str = "") -> None:
         """
         Transfer objects from source_bucket to dest_bucket using separate credentials.
 
         Args:
             source_bucket: Name of the source bucket (uses self.s3_client).
-            dest_bucket: Name of the destination bucket.
+            dest_bucket: Name of the destination bucket (uses self.s3_client).
             dest_key_file: Path to JSON key file for destination bucket.
             prefix: Optional prefix to filter files to transfer.
         """
@@ -140,6 +141,31 @@ class NSF_DB:
         except ClientError as e:
             print(f"[LIST ERROR] {source_bucket}: {e}")
 
+    # Fix the wrapper
+    def transfer_files(self, allocation_type: str, source_bucket: str = None, dest_bucket: str = None, dest_key_file: str = None, prefix: str = "") ->  None:
+        """
+        Wraps the transfer function for different allocation types.
+
+        Args:
+            allocation_type: Type of allocation, e.g., 'bucket'.
+            source_bucket: Source bucket name.
+            dest_bucket: Destination bucket name.
+            dest_key_file: Path to the destination bucket's key file.
+            prefix: Optional prefix filter.
+        """
+        if allocation_type == 'bucket':
+            if not all([source_bucket, dest_bucket, dest_key_file]):
+                print("[ERROR] Missing required arguments for bucket transfer")
+                return
+            self._transfer_between_buckets(
+                source_bucket = source_bucket,
+                dest_bucket=dest_bucket,
+                dest_key_file=dest_key_file,
+                prefix=prefix,
+            )
+        else:
+            print(f"[ERROR] Unsupported allocation type: {allocation_type}")
+    
     def list_bucket_objects(self, bucket_name: str, prefix: str = "") -> pd.Series:
         """
         List all objects in a bucket.
@@ -163,9 +189,10 @@ class NSF_DB:
             return pd.Series([])
 """
 Notes:
-    --- Download (transfer functions for)
-    --- Bucket => HPC
-    --- Globus_Sdk -- (L)
-    --- Transfer between bucket to bucket (boto3)
+    --- Bucket => Bucket (Done not tested)
+    --- Bucket => HPC (In progress) ### Not needed
+    --- Globus_Sdk -- (L) ## Not currently needed
+    --- Transfer between bucket to bucket (boto3) ==  Implemented
     --- Add a feedback loop
+    --- Upload feature == add a prefix (folder) inside the staging area in the bucket.
 """
