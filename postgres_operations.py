@@ -8,7 +8,7 @@ Author: Brent
 """
 
 import pandas as pd
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
 
 class PostgresDB:
@@ -23,10 +23,11 @@ class PostgresDB:
     def handle_error(self, error, context):
         print(f"Error in {context}: {str(error)}")  # Replace with logger if needed
 
-    def create_postgres_records_from_dataframe(self, table_name, dataframe, if_exists='replace'):
+    def create_postgres_records_from_dataframe(self, table_name, dataframe, if_exists='append',schema='public'):
         try:
             dataframe.to_sql(
                 name=table_name,
+                schema=schema,
                 con=self.engine,
                 if_exists=if_exists,
                 index=False,
@@ -113,6 +114,6 @@ class PostgresDB:
 
 
 # Example usage:
-db = PostgresDB(username="dpv", password="sun")
-#db.create_postgres_records_from_dataframe("table_name", dataframe)
+#db = PostgresDB(username="dpv", password="sun")
+#db.create_postgres_records_from_dataframe("loadspot_el", loadspot_el)
  

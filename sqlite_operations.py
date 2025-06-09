@@ -189,5 +189,5 @@ class SQLiteDB:
             with sq.connect(self.database_path) as conn:
                 return pd.read_sql_query(query, conn)
 # Example usage:
-# db = SQLiteDB("C:/Users/Doing/University of Central Florida/UCF_Photovoltaics_GRP - module_databases/Complete_Dataset.db")
+dbl = SQLiteDB("C:/Users/Doing/University of Central Florida/UCF_Photovoltaics_GRP - module_databases/Complete_Dataset.db")
 # db.read_records("module-metadata")
