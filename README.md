@@ -70,7 +70,7 @@ Provides the `NSF_DB` class for interacting with interacting with the bucket in 
 * Credential Handling: Loads access credentials from JSON securely
 * S3 Client Config: Custom S3-compatible client with private endpoint support
 * Upload Support: Uploads raw datafiles using pd.Series.
-* Transfer Support: Transfers files from one bucket to a different bucket
+* Transfer Support: Transfers files from one bucket to a different bucket(Trying to simplify it)
 
 #### 📂 Key File Format
 
