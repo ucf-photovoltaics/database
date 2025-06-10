@@ -70,7 +70,7 @@ Provides the `NSF_DB` class for interacting with interacting with the bucket in 
 * Credential Handling: Loads access credentials from JSON securely
 * S3 Client Config: Custom S3-compatible client with private endpoint support
 * Upload Support: Uploads raw datafiles using pd.Series.
-* Transfer Support: Transfers files from one bucket to a different bucket(Trying to simplify it)
+* Transfer Support: Transfers files from one bucket to a different bucket(Not yet implemented)
 
 #### 📂 Key File Format
 
@@ -102,13 +102,6 @@ nsf_db.upload_files(df, bucket_name="bucket_name") # Change to match the bucket 
 # Download Files
 file_dict = nsf_db.download_files(bucket_name="bucket_name", file_keys=df) 
 
-# Transfer between buckets
-db.transfer_between_buckets(
-    source_bucket="bucket1",# Name of source bucket
-    dest_bucket="bucket2", # Name of destination bucket
-    dest_key_file=" ", # Path to the key file (Key file should be in JSON format)
-    prefix="pretrain/" ## (Optional)
-)
 
 ```
 
