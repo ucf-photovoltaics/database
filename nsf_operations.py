@@ -34,8 +34,6 @@ class NSF_DB:
             endpoint_url=self.keys['endpoint_url']
         )
 
-    def __repr__(self):
-        return f"<NSF_DB endpoint={self.keys['endpoint_url']}>"
     
     def _load_keys(self, key_file:str) -> dict:
         with open(key_file, 'r') as f:
@@ -97,75 +95,6 @@ class NSF_DB:
 
         return report if return_report else None
     
-    def _transfer_between_buckets(self, source_bucket: str, dest_bucket: str, dest_key_file: str, prefix: str = "") -> None:
-        """
-        Transfer objects from source_bucket to dest_bucket using separate credentials.
-
-        Args:
-            source_bucket: Name of the source bucket (uses self.s3_client).
-            dest_bucket: Name of the destination bucket (uses self.s3_client).
-            dest_key_file: Path to JSON key file for destination bucket.
-            prefix: Optional prefix to filter files to transfer.
-        """
-        dest_client = self._get_s3_client_from_file(dest_key_file)
-
-        try:
-            paginator = self.s3_client.get_paginator("list_objects_v2")
-            page_iterator = paginator.paginate(Bucket=source_bucket, Prefix=prefix)
-
-            for page in page_iterator:
-                if "Contents" not in page:
-                    print(f"[INFO] No objects found with prefix '{prefix}' in bucket '{source_bucket}'.")
-                    return
-
-                for obj in page["Contents"]:
-                    key = obj["Key"]
-                    try:
-                        # Download object from source
-                        response = self.s3_client.get_object(Bucket=source_bucket, Key=key)
-                        data = response['Body'].read()
-
-                        # Upload to destination
-                        dest_client.put_object(
-                            Bucket=dest_bucket,
-                            Key=key,
-                            Body=data,
-                            ContentLength=len(data)
-                        )
-                        print(f"[TRANSFERRED] {key}")
-                    except ClientError as e:
-                        print(f"[TRANSFER ERROR] {key}: {e}")
-                    except Exception as e:
-                        print(f"[ERROR] {key}: {e}")
-
-        except ClientError as e:
-            print(f"[LIST ERROR] {source_bucket}: {e}")
-
-    # Fix the wrapper
-    def transfer_files(self, allocation_type: str, source_bucket: str = None, dest_bucket: str = None, dest_key_file: str = None, prefix: str = "") ->  None:
-        """
-        Wraps the transfer function for different allocation types.
-
-        Args:
-            allocation_type: Type of allocation, e.g., 'bucket'.
-            source_bucket: Source bucket name.
-            dest_bucket: Destination bucket name.
-            dest_key_file: Path to the destination bucket's key file.
-            prefix: Optional prefix filter.
-        """
-        if allocation_type == 'bucket':
-            if not all([source_bucket, dest_bucket, dest_key_file]):
-                print("[ERROR] Missing required arguments for bucket transfer")
-                return
-            self._transfer_between_buckets(
-                source_bucket = source_bucket,
-                dest_bucket=dest_bucket,
-                dest_key_file=dest_key_file,
-                prefix=prefix,
-            )
-        else:
-            print(f"[ERROR] Unsupported allocation type: {allocation_type}")
-    
     def list_bucket_objects(self, bucket_name: str, prefix: str = "") -> pd.Series:
         """
         List all objects in a bucket.
@@ -178,6 +107,8 @@ class NSF_DB:
             pd.Series: Object keys in the bucket.
         """
         try:
+            ### Uses a paginator to get objects by page to not run into the limit (1000 objects) for one query
+            ### Makes subsequent queries to list_objects_v2 until all objects are retrieved.
             paginator = self.s3_client.get_paginator("list_objects_v2")
             all_keys = []
             for page in paginator.paginate(Bucket=bucket_name, Prefix=prefix):
@@ -191,8 +122,8 @@ class NSF_DB:
 Notes:
     --- Bucket => Bucket (Done not tested)
     --- Bucket => HPC (In progress) ### Not needed
-    --- Globus_Sdk -- (L) ## Not currently needed
-    --- Transfer between bucket to bucket (boto3) ==  Implemented
+    --- Globus_Sdk -- (L) ## Not currently implemented
+    --- Transfer between bucket to bucket (boto3) == Trying to make it more maintainable
     --- Add a feedback loop
     --- Upload feature == add a prefix (folder) inside the staging area in the bucket.
 """
