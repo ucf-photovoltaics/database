@@ -84,9 +84,9 @@ The JSON key file must include the following fields:
 }
 ```
 
-```
+
 **Note** the keyfile should be named as **key.json**, to avoid running into errors, when initializing/authenticating the bucket. Furthermore, make sure to get the keys for R/W from the bucket allocation details in ColdFront.
-```
+
 
 ---
 
