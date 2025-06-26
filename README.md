@@ -101,7 +101,7 @@ nsf_db = NSF_DB(
 
 # Upload file
 df = pd.Series(['file1.txt','file2.txt'])
-nsf_db.upload_files(df, bucket_name="bucket_name") # Change to match the bucket name to upload files
+nsf_db.put_files(df, bucket_name="bucket_name") # Change to match the bucket name to upload files
 
 ## To upload to a specific folder in the bucket
 nsf_db.upload_files(df, bucket_name="bucket_name", prefix="test") #Change the name of the prefix argument to upload to a specifc folder
@@ -111,6 +111,10 @@ nsf_db.list_files(df, bucket_name="bucket_name")
 
 ## To list all the files in the bucket directory
 nsf_db.list_files(df, bucket_name="bucket_name", prefix="test") # Change the prefix argument to list files in a different directory
+
+## To get files from the bucket
+nsf_db.get_files(bucket_name="{bucket_name}", prefix=None) # Change the prefix argument to download files from specific directory in the bucket
+
 
 ```
 
