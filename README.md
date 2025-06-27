@@ -70,7 +70,7 @@ Provides the `NSF_DB` class for interacting with interacting with the bucket in 
 * Credential Handling: Loads access credentials from JSON securely
 * S3 Client Config: Custom S3-compatible client with private endpoint support
 * Upload Support: Uploads raw datafiles using pd.Series.
-* Transfer Support: Transfers files from one bucket to a different bucket(Not yet implemented)
+
 
 #### 📂 Key File Format
 
@@ -83,6 +83,10 @@ The JSON key file must include the following fields:
   "endpoint_url": "https://your-private-endpoint"
 }
 ```
+
+
+**Note** the keyfile should be named as **key.json**, to avoid running into errors, when initializing/authenticating the bucket. Furthermore, make sure to get the keys for R/W from the bucket allocation details in ColdFront.
+
 
 ---
 
@@ -97,10 +101,19 @@ nsf_db = NSF_DB(
 
 # Upload file
 df = pd.Series(['file1.txt','file2.txt'])
-nsf_db.upload_files(df, bucket_name="bucket_name") # Change to match the bucket name to upload files
+nsf_db.put_files(df, bucket_name="bucket_name") # Change to match the bucket name to upload files
 
-# Download Files
-file_dict = nsf_db.download_files(bucket_name="bucket_name", file_keys=df) 
+## To upload to a specific folder in the bucket
+nsf_db.upload_files(df, bucket_name="bucket_name", prefix="test") #Change the name of the prefix argument to upload to a specifc folder
+
+## To list all the files in the bucket
+nsf_db.list_files(df, bucket_name="bucket_name")
+
+## To list all the files in the bucket directory
+nsf_db.list_files(df, bucket_name="bucket_name", prefix="test") # Change the prefix argument to list files in a different directory
+
+## To get files from the bucket
+nsf_db.get_files(bucket_name="{bucket_name}", prefix=None) # Change the prefix argument to download files from specific directory in the bucket
 
 
 ```
