@@ -14,6 +14,7 @@ import pandas as pd
 from pathlib import Path
 from botocore.client import Config, ClientError
 from typing import List
+import os
 
 
 class NSF_DB:
@@ -103,7 +104,7 @@ class NSF_DB:
 
         return report if return_report else None
     
-    def list_files(self, bucket_name: str, prefix: str = "") -> List:
+    def list_files(self, bucket_name: str, prefix: str = "") -> List[str]:
         """
         List all objects in a bucket.
 
@@ -115,47 +116,52 @@ class NSF_DB:
             List: Object keys in the bucket.
         """
         try:
-            ### Uses a paginator to get objects by page to not run into the limit (1000 objects) for one query
-            ### Makes subsequent queries to list_objects_v2 until all objects are retrieved.
             paginator = self.s3_client.get_paginator("list_objects_v2")
             all_keys = []
             for page in paginator.paginate(Bucket=bucket_name, Prefix=prefix):
                 if "Contents" in page:
-                    for obj in page['Contents']:
-                        all_keys.extend(obj["Key"])
+                    for obj in page["Contents"]:
+                        all_keys.append(obj["Key"]) 
             return all_keys
         except ClientError as e:
             print(f"[LIST ERROR] {bucket_name}: {e}")
             return []
 
-    def get_files(self,bucket_name, prefix:str = ""):
+    def get_files(self, bucket_name: str, prefix: str = ""):
         """
         Downloads all files from a given S3 bucket (optionally filtered by prefix)
         and saves them locally in a folder named <bucket_name>_download/.
 
         Args:
             bucket_name: Name of the S3 bucket.
-            prefix: directory filter for files in the bucket.
+            prefix: Directory filter for files in the bucket.
         """
-
-        download_dir = f"{bucket_name}_download/"
-
-        #Creates a download_dir if it does not exist
+        download_dir = f"{bucket_name}_download"
         Path(download_dir).mkdir(parents=True, exist_ok=True)
 
-        ##Download everyfile from the bucket, or directory if given the prefix
-        file_objs = list_files(bucket_name, prefix)
+        file_objs = self.list_files(bucket_name, prefix) 
 
-        for file_obj in file_objs:
-            local_path = Path(download_dir) / file_obj
-            local_path.parent.mkdir(parents=True,exist_ok=True) # Creates subdirectories as needed
+        for key in file_objs:
+            # Skip keys that are folder placeholders (end with '/')
+            if key.endswith('/'):
+                print(f"[SKIP] Skipping folder key: {key}")
+                continue
+            
+            # Optionally skip keys without an extension (treat as folders)
+            if not os.path.splitext(key)[1]:
+                print(f"[SKIP] Skipping key with no file extension: {key}")
+                continue
+
+            local_path = Path(download_dir) / key
+            local_path.parent.mkdir(parents=True, exist_ok=True)
 
             try:
-                with open(file_obj, 'wb') as f:
-                    self.s3_client.download_fileobj(bucket_name,file_obj, f)
-                print(f"[DOWNLOADED] {file_obj} -> {local_path}")
+                with open(local_path, 'wb') as f:
+                    self.s3_client.download_fileobj(bucket_name, key, f)
+                print(f"[DOWNLOADED] {key} -> {local_path}")
             except Exception as e:
-                print(f"[ERROR] Failed to download {file_obj}: {e}")
+                print(f"[ERROR] Failed to download {key}: {e}")
+
 
 
 #Create a subclass for the timeseries data
