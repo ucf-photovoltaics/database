@@ -2,7 +2,6 @@
 author: Albert
 """
 import psycopg2
-from nsf_operations import NSF_DB
 
 class ModuleManager:
     def __init__(self,dbname:str, user:str):
@@ -14,22 +13,28 @@ class ModuleManager:
 
         try:
             conn = psycopg2.connect(f"dbname={self.dbname} user={self.user} password={self.password} host={self.host} port={self.port}")
-            cur = conn.cursor()
+            self.cur = conn.cursor()
             print("Connection Successful")
         except psycopg2.DatabaseError as e:
             raise e
     
     def query_modules(self, sql_query):
         try:
-            self.sql_query = cur.execute(sql_query)
+            self.cur.execute(sql_query)
+            results = self.cur.fetchall() #Gets all rows based on the query
+            return results
         except psycopg2.Error as e:
             raise e
-        
-
+    def close(self):
+        self.cur.close()
+        self.conn.close()
 
 #### Testing
 def main():
     module_access = ModuleManager(dbname="fsecdatabase",user="albejojo" )
+    query = "SELECT * FROM instrument_data.ir_indoor_metadata LIMIT 8"
+    results = module_access.query_modules(query)
+    print(row  for row in results)
 
 
 
