@@ -2,21 +2,29 @@
 author: Albert
 """
 import psycopg2
+from dotenv import dotenv_values
+import os
+
+# load the dotenv
+config = dotenv_values(".env") #Reads the .env files
 
 class ModuleManager:
     def __init__(self,dbname:str, user:str):
         self.dbname = dbname
         self.user = user
-        self.host = "34.73.180.136"
-        self.port = 5432
-        self.password="Solar"
+        self.host = config.get("HOST")
+        self.port = int(config.get("PORT"))
+        self.password=config.get("PASSWORD")
 
+       
+        
         try:
-            conn = psycopg2.connect(f"dbname={self.dbname} user={self.user} password={self.password} host={self.host} port={self.port}")
+            conn = psycopg2.connect(f"dbname={self.dbname} user={self.user} password={self.password} host={self.host} port={int(self.port)}")
             self.cur = conn.cursor()
             print("Connection Successful")
         except psycopg2.DatabaseError as e:
             raise e
+        
     
     def query_modules(self, sql_query):
         try:
@@ -32,9 +40,9 @@ class ModuleManager:
 #### Testing
 def main():
     module_access = ModuleManager(dbname="fsecdatabase",user="albejojo" )
-    query = "SELECT * FROM instrument_data.ir_indoor_metadata LIMIT 8"
-    results = module_access.query_modules(query)
-    print(row  for row in results)
+   # query = "SELECT * FROM public.el_image_metadata LIMIT 8" # Insuffient Permissions
+    #results = module_access.query_modules(query)
+    #print(row  for row in results)
 
 
 
