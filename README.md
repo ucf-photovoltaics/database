@@ -1,4 +1,3 @@
-
 # Database Operations Modules
 
 This repository provides two Python modules for performing robust, logged, and flexible database operations on **SQLite** and **PostgreSQL** databases. These classes are designed for streamlined data engineering workflows, especially where Pandas integration is essential.
@@ -13,12 +12,12 @@ Provides the `SQLiteDB` class for interacting with SQLite databases.
 
 #### ✅ Key Features
 
-* Connect to a SQLite database file.
-* Read table records into a Pandas DataFrame.
-* Insert single or batch records from DataFrames.
-* Join module metadata to enrich serial number data.
-* Retrieve the latest measurement date.
-* Centralized logging of errors and events.
+- Connect to a SQLite database file.
+- Read table records into a Pandas DataFrame.
+- Insert single or batch records from DataFrames.
+- Join module metadata to enrich serial number data.
+- Retrieve the latest measurement date.
+- Centralized logging of errors and events.
 
 #### 📌 Example
 
@@ -38,11 +37,11 @@ Provides the `PostgresDB` class for interacting with PostgreSQL databases.
 
 #### ✅ Key Features
 
-* Connect to PostgreSQL with credentials.
-* Query tables into Pandas DataFrames.
-* Insert single records using parameterized SQL queries.
-* Execute arbitrary SQL commands.
-* Built-in error handling and cursor management.
+- Connect to PostgreSQL with credentials.
+- Query tables into Pandas DataFrames.
+- Insert single records using parameterized SQL queries.
+- Execute arbitrary SQL commands.
+- Built-in error handling and cursor management.
 
 #### 📌 Example
 
@@ -62,15 +61,15 @@ db.create_postgres_records_from_dataframe("module_metadata", ["module_id", "make
 
 ---
 
-### 3. `nsf_operations.py` 
+### 3. `nsf_operations.py`
 
 Provides the `NSF_DB` class for interacting with interacting with the bucket in NSF ACCESS.
 
 #### ✅ Key Features
-* Credential Handling: Loads access credentials from JSON securely
-* S3 Client Config: Custom S3-compatible client with private endpoint support
-* Upload Support: Uploads raw datafiles using pd.Series.
 
+- Credential Handling: Loads access credentials from JSON securely
+- S3 Client Config: Custom S3-compatible client with private endpoint support
+- Upload Support: Uploads raw datafiles using pd.Series.
 
 #### 📂 Key File Format
 
@@ -84,9 +83,7 @@ The JSON key file must include the following fields:
 }
 ```
 
-
-**Note** the keyfile should be named as **key.json**, to avoid running into errors, when initializing/authenticating the bucket. Furthermore, make sure to get the keys for R/W from the bucket allocation details in ColdFront.
-
+**Note** the keyfile should be a .json file, like **key.json**, to avoid running into errors, when initializing/authenticating the bucket. Furthermore, make sure to get the keys for R/W from the bucket allocation details in ColdFront.
 
 ---
 
@@ -104,7 +101,7 @@ df = pd.Series(['file1.txt','file2.txt'])
 nsf_db.put_files(df, bucket_name="bucket_name") # Change to match the bucket name to upload files
 
 ## To upload to a specific folder in the bucket
-nsf_db.upload_files(df, bucket_name="bucket_name", prefix="test") #Change the name of the prefix argument to upload to a specifc folder
+nsf_db.upload_files(df, bucket_name="bucket_name", prefix="test") #Change the name of the prefix argument to upload to a specifc folder, automatically creates folder if not present inside the bucket.
 
 ## To list all the files in the bucket
 nsf_db.list_files(df, bucket_name="bucket_name")
@@ -114,21 +111,18 @@ nsf_db.list_files(df, bucket_name="bucket_name", prefix="test") # Change the pre
 
 ## To get files from the bucket
 nsf_db.get_files(bucket_name="{bucket_name}", prefix=None) # Change the prefix argument to download files from specific directory in the bucket
-
-
 ```
-
 
 ---
 
 ## 📦 Requirements
 
-* Python 3.7+
-* pandas
-* sqlite3 (standard library)
-* psycopg2
-* boto3
-* botocore == 1.35.95
+- Python 3.7+
+- pandas
+- sqlite3 (standard library)
+- psycopg2
+- boto3
+- botocore == 1.35.95
 
 Install required packages:
 
@@ -146,10 +140,10 @@ The SQLite class automatically generates a log file (named based on the DB path)
 
 ## 🚀 Future Enhancements
 
-* Automated Raw Data Upload to NSF ACCESS (Future Considerations: Parallel Processing (Upload/Download), Progress Bar)
-* RDF Enrichment Via Comments and Metadata Table
-* Workflow Integrations and Notebook Support
-* Integration with Airflow and other orchestration tools
+- Automated Raw Data Upload to NSF ACCESS (Future Considerations: Parallel Processing (Upload/Download), Progress Bar)
+- RDF Enrichment Via Comments and Metadata Table
+- Workflow Integrations and Notebook Support
+- Integration with Airflow and other orchestration tools
 
 ---
 
